@@ -30,6 +30,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug: list repository files and try local docker build
+        run: |
+          echo "Repository root contents:"; ls -la
+          echo "Show requirements.txt:"; cat requirements.txt || true
+          echo "Attempting docker build with plain progress to surface errors:";
+          docker build --progress=plain -t debug-build:${{ github.sha }} . || true
+
       - name: Build image (no push) and load to Docker
         uses: docker/build-push-action@v4
         with:

@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.env
+.venv
+.git
+.github
+*.egg-info
+build/
+dist/
+node_modules/
+*.db
+*.sqlite3
+__MACOSX

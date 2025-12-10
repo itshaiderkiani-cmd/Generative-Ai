@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Documentation Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-section, .output-section {
+            margin: 20px 0;
+        }
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #output {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Documentation Generator</h1>
+        
+        <div class="input-section">
+            <h2>Input Code:</h2>
+            <textarea id="codeInput" placeholder="Paste your code here..."></textarea>
+            <button id="generateBtn">Generate Documentation</button>
+        </div>
+
+        <div class="output-section">
+            <h2>Generated Documentation:</h2>
+            <pre id="output">Documentation will appear here...</pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const codeInput = document.getElementById('codeInput');
+            const output = document.getElementById('output');
+            const button = document.getElementById('generateBtn');
+
+            // Get the code from the textarea
+            const code = codeInput.value.trim();
+
+            if (!code) {
+                output.textContent = 'Please enter some code first.';
+                return;
+            }
+
+            // Show loading state
+            button.textContent = 'Generating...';
+            button.classList.add('loading');
+            output.textContent = 'Generating documentation...';
+
+            try {
+                // Send the code to the backend
+                const response = await fetch('/generate-docs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    output.textContent = `Error: ${data.error}`;
+                } else {
+                    output.textContent = data.documentation;
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            } finally {
+                // Reset button state
+                button.textContent = 'Generate Documentation';
+                button.classList.remove('loading');
+            }
+        });
+    </script>
+</body>
+</html>

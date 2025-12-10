@@ -24,16 +24,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         run: |
+          set -e
+          echo "Starting Docker build..."
           docker build -t ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest \
                        -t ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }} \
+                       --progress=plain \
                        .
-
-      - name: Push image to GHCR
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest
+          echo "Build completed. Now pushing images..."
+          docker push ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest && \
           docker push ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }}
+          echo "Push completed successfully!"
 
       - name: Image published successfully
         run: |

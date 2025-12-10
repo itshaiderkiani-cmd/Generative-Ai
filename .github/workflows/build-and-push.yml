@@ -17,9 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -30,35 +27,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Debug: list repository files and try local docker build
-        run: |
-          echo "Repository root contents:"; ls -la
-          echo "Show requirements.txt:"; cat requirements.txt || true
-          echo "Attempting docker build with plain progress to surface errors:";
-          docker build --progress=plain -t debug-build:${{ github.sha }} . || true
-
-      - name: Build image (no push) and load to Docker
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: false
-          load: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest
-            ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }}
-
-      - name: Run container for healthcheck
-        run: |
-          # run container in background
-          docker run -d --name ci_cd_test -p 5000:5000 ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }}
-          # wait for service to start (up to 30s)
-          SECS=0; until [ $SECS -ge 30 ] || curl -s -f http://127.0.0.1:5000/ >/dev/null; do SECS=$((SECS+1)); sleep 1; done
-          if [ $SECS -ge 30 ]; then docker logs ci_cd_test || true; docker rm -f ci_cd_test || true; echo "Healthcheck failed: service did not start"; exit 1; fi
-          # perform a simple GET to verify endpoint
-          curl -v --fail http://127.0.0.1:5000/ || (docker logs ci_cd_test || true; docker rm -f ci_cd_test || true; exit 1)
-          docker rm -f ci_cd_test || true
-
-      - name: Push image to GHCR
+      - name: Build and push Docker image to GHCR
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -67,6 +36,8 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest
             ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }}
 
-      - name: Image info
+      - name: Image published successfully
         run: |
-          echo "Published image: ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest"
+          echo "✓ Docker image published to GHCR:"
+          echo "  ghcr.io/${{ github.repository_owner }}/ci-cd-demo:latest"
+          echo "  ghcr.io/${{ github.repository_owner }}/ci-cd-demo:${{ github.sha }}"

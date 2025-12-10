@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+.venv
+venv/
+env/
+.idea/
+.vscode/
+.DS_Store
+node_modules/
+huggingface_token.txt
+secrets.txt
